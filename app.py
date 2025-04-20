@@ -5,7 +5,7 @@ import ast
 app = Flask(__name__)
 
 # Load dataset
-df = pd.read_csv('data/clean_dataset.csv')
+df = pd.read_csv('data/clean_dataset_final.csv')
 
 # Convert ingredients column from string to list
 df['ingredients'] = df['ingredients'].apply(ast.literal_eval)
