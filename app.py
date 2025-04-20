@@ -27,14 +27,12 @@ def index():
 
 @app.route('/suggest', methods=['POST'])
 def suggest():
-    # Lấy nguyên liệu người dùng nhập và chuẩn hoá
-    input_ingredients = request.form.get('ingredients', '').lower().split(',')
+    input_ingredients = request.form.get('ingredients', '').lower().split()
     input_ingredients = [i.strip() for i in input_ingredients if i.strip()]
 
     max_calories = request.form.get('calories')
     max_calories = int(max_calories) if max_calories else 9999
 
-    # Lọc món ăn chứa ít nhất một nguyên liệu trùng
     def has_ingredient(row_ingredients):
         return any(ing.lower() in [i.lower() for i in row_ingredients] for ing in input_ingredients)
 

@@ -65,17 +65,37 @@ function createTag(ingredient) {
   const tag = document.createElement('div');
   tag.className = 'tag';
   tag.textContent = ingredient;
-  tag.onclick = () => addIngredientToInput(ingredient);
+
+  tag.onclick = () => {
+    const inputField = document.getElementById("ingredientInput");
+    let parts = inputField.value.trim().split(/\s+/).filter(p => p);
+
+    if (tag.classList.contains('selected')) {
+      // GỠ chọn → xoá khỏi input
+      tag.classList.remove('selected');
+      parts = parts.filter(item => item.toLowerCase() !== ingredient.toLowerCase());
+    } else {
+      // CHỌN → thêm nếu chưa có
+      if (!parts.includes(ingredient)) {
+        parts.push(ingredient);
+      }
+      tag.classList.add('selected');
+    }
+
+    inputField.value = parts.join(' ');
+  };
+
   tagContainer.appendChild(tag);
 }
 
+
 function addIngredientToInput(ingredient) {
   const inputField = document.getElementById("ingredientInput");
-  let parts = inputField.value.split(',').map(p => p.trim());
+  let parts = inputField.value.trim().split(/\s+/); 
 
   if (!parts.includes(ingredient)) {
     parts.push(ingredient);
   }
 
-  inputField.value = parts.filter(p => p).join(', ') + ', ';
+  inputField.value = parts.join(' ');
 }

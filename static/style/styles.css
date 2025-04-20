@@ -101,6 +101,12 @@ body {
     cursor: pointer;
     transition: background-color 0.2s ease;
   }
+
+  .tag.selected {
+    background-color: #4CAF50 !important;
+    color: white;
+  }
+  
   
   .tag:hover {
     background-color: #ccc;
