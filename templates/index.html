@@ -5,6 +5,68 @@
   <title>Food Recommendation System</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="{{ url_for('static', filename='style/styles.css') }}">
+  <style>
+    /* Căn chỉnh form */
+    .form-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 300px;
+      margin: 0 auto;
+    }
+
+    .dropdown-container {
+      position: relative;
+    }
+
+    #ingredientInput {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    #cluster {
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .results-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .dish-card {
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 5px;
+      width: 200px;
+      text-align: center;
+    }
+
+    .dish-card img {
+      width: 100%;
+      border-radius: 5px;
+    }
+  </style>
 </head>
 <body>
   <header>Food Recommendation System</header>
@@ -17,7 +79,16 @@
           <input type="text" id="ingredientInput" name="ingredients" placeholder="Type ingredients..." onfocus="showDropdown()" oninput="filterIngredients()" required>
           <div class="dropdown-list" id="dropdownList"></div>
         </div>
-        <input type="number" id="calories" name="calories" placeholder="Enter max calories (optional)" min="1">
+        <input type="number" id="calories" name="calories" placeholder="Enter max calories" min="1">
+        
+        <!-- Lọc theo nhóm -->
+        <select name="cluster" id="cluster">
+          <option value="">Cluster (Optional)</option>
+          {% for i in range(5) %} <!-- 5 nhóm nếu bạn sử dụng 5 clusters -->
+            <option value="{{ i }}">Cluster {{ i }}</option>
+          {% endfor %}
+        </select>
+
         <button type="submit">Suggest Recipes</button>
       </form>
       <div class="tag-list" id="tagList"></div>
@@ -28,10 +99,11 @@
       {% if cuisines %}
         {% for dish in cuisines %}
           <div class="dish-card">
-            <img src="https://via.placeholder.com/250" alt="Dish Image">
+            <img src="{{ dish.images }}" alt="Dish Image">
             <h3>{{ dish.name }}</h3>
             <p>Cuisine: {{ dish.cuisine }}</p>
             <p>Calories: {{ dish.calories }}</p>
+            <p>Cluster: {{ dish.cluster }}</p>  <!-- Hiển thị nhóm món ăn -->
           </div>
         {% endfor %}
       {% else %}
