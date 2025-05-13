@@ -2,55 +2,88 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Food Recommendation System</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <title>Food Recipe Suggestion</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='style/styles.css') }}">
+  <script src="{{ url_for('static', filename='script/scripts.js') }}"></script>
 </head>
-<body>
-  <header>Food Recommendation System</header>
-  <div class="main-container">
-    <!-- Form -->
-    <div class="form-container">
-      <h2>Enter Ingredients and Calories</h2>
-      <form action="/suggest" method="POST">
-        <div class="dropdown-container">
-          <input type="text" id="ingredientInput" name="ingredients" placeholder="Type ingredients..." onfocus="showDropdown()" oninput="filterIngredients()" required>
-          <div class="dropdown-list" id="dropdownList"></div>
-        </div>
-        <input type="number" id="calories" name="calories" placeholder="Enter max calories (optional)" min="1">
-        
-        <!-- Lọc theo nhóm -->
-        <select name="cluster" id="cluster">
-          <option value="">Select Cluster (Optional)</option>
-          {% for i in range(5) %} <!-- 5 nhóm nếu bạn sử dụng 5 clusters -->
-            <option value="{{ i }}">Cluster {{ i }}</option>
-          {% endfor %}
-        </select>
 
-        <button type="submit">Suggest Recipes</button>
-      </form>
-      <div class="tag-list" id="tagList"></div>
-    </div>
+<body class="min-h-screen text-white">
 
-    <!-- Results -->
-    <div class="results-container">
-      {% if cuisines %}
-        {% for dish in cuisines %}
-          <div class="dish-card">
-            <img src="{{ dish.images }}" alt="Dish Image">
-            <h3>{{ dish.name }}</h3>
-            <p>Cuisine: {{ dish.cuisine }}</p>
-            <p>Calories: {{ dish.calories }}</p>
-            <p>Cluster: {{ dish.cluster }}</p>  
-          </div>
-        {% endfor %}
-      {% else %}
-        <div class="no-results">No results found. Try other ingredients!</div>
-      {% endif %}
-    </div>
+  <!-- VIDEO NỀN -->
+  <video autoplay muted loop playsinline id="background-video">
+    <source src="/static/videos/background.mp4" type="video/mp4">
+  </video>
+
+  <!-- TIÊU ĐỀ Ở TRÊN, CĂN GIỮA -->
+  <div class="text-center mt-10 px-4">
+    <h1 class="text-4xl md:text-6xl font-extrabold drop-shadow leading-tight">
+      Your Ingredients<br />Our Recipes!
+    </h1>
+    <p class="text-lg font-semibold mt-2 drop-shadow">Search Recipes</p>
   </div>
 
-  <div id="ingredient-data" data-ingredients='{{ ingredients_list | tojson | safe }}' style="display:none;"></div>
-  <script src="{{ url_for('static', filename='script/scripts.js') }}"></script>
+  <!-- KHUNG NHẬP LIỆU + MÓN ĂN -->
+  <div class="flex flex-col md:flex-row w-full max-w-[1440px] mx-auto px-4 gap-8 mt-20 items-start">
+
+    <!-- KHUNG TRÁI -->
+    <div class="md:w-1/3 w-full space-y-4">
+      <!-- Form nhập -->
+      <form method="POST" class="relative">
+        <input
+          type="text"
+          name="ingredients"
+          id="ingredientInput"
+          placeholder="Type ingredients..."
+
+          class="w-full pl-4 pr-28 py-2 bg-white border border-gray-300 rounded-full text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-400"
+        />
+        <button
+          type="submit"
+          class="absolute top-1/2 right-2 transform -translate-y-1/2 bg-red-500 hover:bg-red-600 text-white font-semibold px-5 py-1.5 rounded-full transition"
+        >
+          Submit
+        </button>
+
+        <!-- Drop-down menu gợi ý -->
+        <ul id="suggestionList"
+            class="absolute z-10 bg-white text-gray-900 w-full mt-1 rounded-lg shadow-md hidden max-h-48 overflow-y-auto border border-gray-200">
+        </ul>
+      </form>
+      <div id="ingredient-data" data-ingredients='{{ ingredient_list | tojson | safe }}' hidden></div>
+      
+    </div>
+
+    <!-- KHUNG PHẢI: KẾT QUẢ MÓN ĂN -->
+<div class="md:w-2/3 w-full">
+  {% if ingredients %}
+    {% if recipes %}
+      <div id="resultSection" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-6">
+        {% for r in recipes %}
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:scale-105 hover:shadow-xl transition-transform duration-300 animate-fadeIn">
+          <img src="{{ r['images'] }}"
+              alt="{{ r['name'] }}"
+              class="w-full h-36 object-cover">
+          <div class="p-4 text-gray-800">
+            <h3 class="text-sm font-bold mb-1 truncate">{{ r['name'] }}</h3>
+            {% if r.get('cuisine') %}
+            <p class="text-xs text-gray-600">Cuisine: {{ r['cuisine'] }}</p>
+            {% endif %}
+            {% if r.get('calories') %}
+            <p class="text-xs text-gray-600">Calories: {{ r['calories'] }}</p>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-red-200 text-sm italic mt-4">Không tìm thấy món ăn phù hợp với nguyên liệu bạn nhập.</p>
+    {% endif %}
+  {% endif %}
+</div>
+
+
+  </div>
+
 </body>
 </html>

@@ -1,116 +1,63 @@
-const rawData = document.getElementById("ingredient-data").dataset.ingredients;
-const ingredientsList = JSON.parse(rawData);
+document.addEventListener("DOMContentLoaded", () => {
+  const dataDiv = document.getElementById("ingredient-data");
+  const raw = dataDiv?.dataset.ingredients;
+  let ingredientList = [];
 
-// Dropdown logic
-function showDropdown() {
-  document.getElementById("dropdownList").style.display = 'block';
-}
-
-function selectIngredient(ingredient) {
-  const inputField = document.getElementById("ingredientInput");
-  let parts = inputField.value.split(',');
-  parts[parts.length - 1] = ' ' + ingredient;
-  inputField.value = parts.join(',').replace(/^,/, '').trim() + ', ';
-  document.getElementById("dropdownList").style.display = 'none';
-}
-
-function filterIngredients() {
-  const searchValue = document.getElementById("ingredientInput").value.toLowerCase().split(',').pop().trim();
-  const dropdown = document.getElementById("dropdownList");
-  dropdown.innerHTML = '';
-
-  if (searchValue.length > 0) {
-    ingredientsList.forEach(ingredient => {
-      if (ingredient.toLowerCase().startsWith(searchValue)) {
-        const div = document.createElement('div');
-        div.textContent = ingredient;
-        div.onclick = () => selectIngredient(ingredient);
-        dropdown.appendChild(div);
-      }
-    });
-    dropdown.style.display = dropdown.children.length > 0 ? 'block' : 'none';
-  } else {
-    dropdown.style.display = 'none';
+  try {
+    ingredientList = JSON.parse(raw).map(i => i.toLowerCase());
+    console.log("Ingredients loaded:", ingredientList.slice(0, 5));
+  } catch (e) {
+    console.error("Không thể đọc nguyên liệu từ data-ingredients", e);
   }
-}
 
-window.addEventListener('click', function (event) {
-  if (!event.target.closest('.dropdown-container')) {
-    document.getElementById("dropdownList").style.display = 'none';
-  }
-});
+  const input = document.getElementById("ingredientInput");
+  const suggestionBox = document.getElementById("suggestionList");
 
-// Tag suggestion logic
-const tagContainer = document.getElementById('tagList');
-const previewTags = ingredientsList.slice(0, 20);
-const hiddenTags = ingredientsList.slice(20);
+  input.addEventListener("input", function () {
+    const terms = this.value.trim().split(/\s+/);
+    const lastWord = terms[terms.length - 1].toLowerCase();
+    suggestionBox.innerHTML = "";
 
-previewTags.forEach(ingredient => {
-  createTag(ingredient);
-});
-
-// Logic for the "More" button
-if (hiddenTags.length > 0) {
-  const moreTag = document.createElement('div');
-  moreTag.className = 'tag';
-  moreTag.textContent = `+${hiddenTags.length} more`;
-  moreTag.style.fontWeight = 'bold';
-  moreTag.onclick = () => {
-    // Display the remaining hidden ingredients
-    hiddenTags.forEach(ingredient => createTag(ingredient));
-
-    // Change the "More" button text to "Less" and toggle functionality
-    moreTag.textContent = 'Less';
-    moreTag.onclick = () => {
-      // Remove the extra ingredients and reset the button
-      hiddenTags.forEach(ingredient => {
-        const tag = tagContainer.querySelector(`div.tag[data-ingredient="${ingredient}"]`);
-        if (tag) {
-          tag.remove();
-        }
-      });
-      moreTag.textContent = `+${hiddenTags.length} more`; // Restore "More"
-    };
-  };
-  tagContainer.appendChild(moreTag);
-}
-
-function createTag(ingredient) {
-  const tag = document.createElement('div');
-  tag.className = 'tag';
-  tag.textContent = ingredient;
-  tag.dataset.ingredient = ingredient; // Save ingredient info
-
-  tag.onclick = () => {
-    const inputField = document.getElementById("ingredientInput");
-    let parts = inputField.value.trim().split(/\s+/).filter(p => p);
-
-    if (tag.classList.contains('selected')) {
-      // Remove selection → delete from input
-      tag.classList.remove('selected');
-      parts = parts.filter(item => item.toLowerCase() !== ingredient.toLowerCase());
-    } else {
-      // Add selection → add if not already present
-      if (!parts.includes(ingredient)) {
-        parts.push(ingredient);
-      }
-      tag.classList.add('selected');
+    if (lastWord.length === 0) {
+      suggestionBox.classList.add("hidden");
+      return;
     }
 
-    inputField.value = parts.join(' ');
-  };
+    const filtered = ingredientList.filter(item => item.startsWith(lastWord)).slice(0, 8);
 
-  tagContainer.appendChild(tag);
-}
+    if (filtered.length === 0) {
+      suggestionBox.classList.add("hidden");
+      return;
+    }
 
-function addIngredientToInput(ingredient) {
-  const inputField = document.getElementById("ingredientInput");
-  let parts = inputField.value.trim().split(/\s+/);
+    filtered.forEach(ing => {
+      const li = document.createElement("li");
+      li.className = "px-4 py-2 hover:bg-gray-100 cursor-pointer text-black font-semibold";
+      li.textContent = ing;
+      li.onclick = () => {
+        terms[terms.length - 1] = ing;
+        input.value = terms.join(" ") + " ";
+        suggestionBox.innerHTML = "";
+        suggestionBox.classList.add("hidden");
+        input.focus();
+      };
+      suggestionBox.appendChild(li);
+    });
 
-  if (!parts.includes(ingredient)) {
-    parts.push(ingredient);
+    suggestionBox.classList.remove("hidden");
+  });
+
+  // Ẩn dropmenu nếu click ra ngoài
+  document.addEventListener("click", (e) => {
+    if (!input.contains(e.target) && !suggestionBox.contains(e.target)) {
+      suggestionBox.innerHTML = "";
+      suggestionBox.classList.add("hidden");
+    }
+  });
+
+  // Cuộn tới phần kết quả (nếu có)
+  const resultSection = document.getElementById("resultSection");
+  if (resultSection) {
+    resultSection.scrollIntoView({ behavior: "smooth" });
   }
-
-  inputField.value = parts.join(' ');
-}
-
+});
