@@ -15,7 +15,7 @@
     <source src="/static/videos/background.mp4" type="video/mp4">
   </video>
 
-  <!-- TIÊU ĐỀ Ở TRÊN, CĂN GIỮA -->
+  <!-- TIÊU ĐỀ -->
   <div class="text-center mt-10 px-4">
     <h1 class="text-4xl md:text-6xl font-extrabold drop-shadow leading-tight">
       Your Ingredients<br />Our Recipes!
@@ -23,65 +23,106 @@
     <p class="text-lg font-semibold mt-2 drop-shadow">Search Recipes</p>
   </div>
 
-  <!-- KHUNG NHẬP LIỆU + MÓN ĂN -->
+  <!-- GIAO DIỆN CHÍNH -->
   <div class="flex flex-col md:flex-row w-full max-w-[1440px] mx-auto px-4 gap-8 mt-20 items-start">
 
-    <!-- KHUNG TRÁI -->
+    <!-- KHUNG TRÁI: FORM NHẬP LIỆU + LỌC -->
     <div class="md:w-1/3 w-full space-y-4">
-      <!-- Form nhập -->
-      <form method="POST" class="relative">
-        <input
-          type="text"
-          name="ingredients"
-          id="ingredientInput"
-          placeholder="Type ingredients..."
+      <form method="POST" class="space-y-4">
 
-          class="w-full pl-4 pr-28 py-2 bg-white border border-gray-300 rounded-full text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-400"
-        />
-        <button
-          type="submit"
-          class="absolute top-1/2 right-2 transform -translate-y-1/2 bg-red-500 hover:bg-red-600 text-white font-semibold px-5 py-1.5 rounded-full transition"
-        >
-          Submit
-        </button>
+        <!-- Thanh nhập nguyên liệu -->
+        <div class="relative">
+          <input
+            type="text"
+            name="ingredients"
+            id="ingredientInput"
+            placeholder="Type ingredients..."
+            class="w-full pl-4 pr-28 py-2 bg-white border border-gray-300 rounded-full text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-400"
+          />
+          <button
+            type="submit"
+            class="absolute top-1/2 right-2 transform -translate-y-1/2 bg-red-500 hover:bg-red-600 text-white font-semibold px-5 py-1.5 rounded-full transition"
+          >
+            Submit
+          </button>
 
-        <!-- Drop-down menu gợi ý -->
-        <ul id="suggestionList"
-            class="absolute z-10 bg-white text-gray-900 w-full mt-1 rounded-lg shadow-md hidden max-h-48 overflow-y-auto border border-gray-200">
-        </ul>
+          <!-- Drop-down gợi ý -->
+          <ul id="suggestionList"
+              class="absolute z-10 bg-white text-gray-900 w-full mt-1 rounded-lg shadow-md hidden max-h-48 overflow-y-auto border border-gray-200">
+          </ul>
+        </div>
+
+        <!-- Dữ liệu JSON nguyên liệu -->
+        <div id="ingredient-data" data-ingredients='{{ ingredient_list | tojson | safe }}' hidden></div>
+
+        <!-- Bộ lọc -->
+        <div class="space-y-4">
+          <!-- Cuisine -->
+          <label class="block text-sm font-semibold">Lọc theo Cuisine:</label>
+          <select name="cuisine" class="w-full rounded-lg px-4 py-2 text-gray-900">
+            <option value="">Tất cả</option>
+            <option value="Vietnamese" {% if cuisine == 'Vietnamese' %}selected{% endif %}>Vietnamese</option>
+            <option value="Thai" {% if cuisine == 'Thai' %}selected{% endif %}>Thai</option>
+            <option value="Chinese" {% if cuisine == 'Chinese' %}selected{% endif %}>Chinese</option>
+            <option value="Italian" {% if cuisine == 'Italian' %}selected{% endif %}>Italian</option>
+          </select>
+
+          <!-- Calories -->
+          <label class="block text-sm font-semibold">Calories tối đa:</label>
+          <input 
+            type="number"
+            name="max_calories"
+            placeholder="Nhập ví dụ: 300"
+            min="0"
+            value="{{ max_calories }}"
+            class="w-full rounded-lg px-4 py-2 text-gray-900"
+          />
+        </div>
+
       </form>
-      <div id="ingredient-data" data-ingredients='{{ ingredient_list | tojson | safe }}' hidden></div>
-      
     </div>
 
-    <!-- KHUNG PHẢI: KẾT QUẢ MÓN ĂN -->
-<div class="md:w-2/3 w-full">
-  {% if ingredients %}
-    {% if recipes %}
-      <div id="resultSection" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-6">
-        {% for r in recipes %}
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:scale-105 hover:shadow-xl transition-transform duration-300 animate-fadeIn">
-          <img src="{{ r['images'] }}"
-              alt="{{ r['name'] }}"
-              class="w-full h-36 object-cover">
-          <div class="p-4 text-gray-800">
-            <h3 class="text-sm font-bold mb-1 truncate">{{ r['name'] }}</h3>
-            {% if r.get('cuisine') %}
-            <p class="text-xs text-gray-600">Cuisine: {{ r['cuisine'] }}</p>
-            {% endif %}
-            {% if r.get('calories') %}
-            <p class="text-xs text-gray-600">Calories: {{ r['calories'] }}</p>
-            {% endif %}
-          </div>
-        </div>
-        {% endfor %}
-      </div>
-    {% else %}
-      <p class="text-red-200 text-sm italic mt-4">Không tìm thấy món ăn phù hợp với nguyên liệu bạn nhập.</p>
-    {% endif %}
-  {% endif %}
-</div>
+    <!-- KHUNG PHẢI: KẾT QUẢ -->
+    <div class="md:w-2/3 w-full">
+      {% if ingredients %}
+        {% if recipes %}
+          <div id="resultSection" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-6">
+            {% for r in recipes %}
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:scale-105 hover:shadow-xl transition-transform duration-300 animate-fadeIn">
+              <!-- ẢNH + ICON -->
+              <div class="relative">
+                <img src="{{ r['images'] }}"
+                     alt="{{ r['name'] }}"
+                     class="w-full h-36 object-cover">
+                <!-- ICON TRÁI TIM -->
+                <button
+                  class="absolute bottom-2 right-2 text-red-500 text-xl hover:scale-125 transition"
+                  onclick="toggleFavorite(this)"
+                  data-name="{{ r['name'] }}"
+                  title="Thêm vào giỏ"
+                >
+                  ❤️
+                </button>
+              </div>
 
+              <!-- THÔNG TIN MÓN -->
+              <div class="p-4 text-gray-800">
+                <h3 class="text-sm font-bold mb-1 truncate">{{ r['name'] }}</h3>
+                {% if r.get('cuisine') %}
+                <p class="text-xs text-gray-600">Cuisine: {{ r['cuisine'] }}</p>
+                {% endif %}
+                {% if r.get('calories') %}
+                <p class="text-xs text-gray-600">Calories: {{ r['calories'] }}</p>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-red-200 text-sm italic mt-4">Không tìm thấy món ăn phù hợp với nguyên liệu bạn nhập.</p>
+        {% endif %}
+      {% endif %}
+    </div>
 
   </div>
 

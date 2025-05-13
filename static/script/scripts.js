@@ -61,3 +61,21 @@ document.addEventListener("DOMContentLoaded", () => {
     resultSection.scrollIntoView({ behavior: "smooth" });
   }
 });
+
+function toggleFavorite(btn) {
+  const card = btn.closest(".card");
+  const name = card.dataset.name;
+
+  let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+
+  if (favorites.includes(name)) {
+    favorites = favorites.filter(item => item !== name);
+    alert(`❌ Đã gỡ món: ${name}`);
+  } else {
+    favorites.push(name);
+    alert(`❤️ Đã thêm vào giỏ: ${name}`);
+  }
+
+  localStorage.setItem("favorites", JSON.stringify(favorites));
+}
+
