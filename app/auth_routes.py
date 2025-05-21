@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, flash, session
-from werkzeug.security import generate_password_hash, check_password_hash
-from app.models import db, User
+from app.firebase_user import add_user, validate_user, get_user
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -10,13 +9,11 @@ def register():
         username = request.form["username"]
         password = request.form["password"]
 
-        if User.query.filter_by(username=username).first():
+        if get_user(username):
             flash("Tên người dùng đã tồn tại.")
             return redirect("/register")
 
-        user = User(username=username, password=generate_password_hash(password))
-        db.session.add(user)
-        db.session.commit()
+        add_user(username, password)
         flash("Đăng ký thành công. Vui lòng đăng nhập.")
         return redirect("/login")
 
@@ -28,10 +25,8 @@ def login():
         username = request.form["username"]
         password = request.form["password"]
 
-        user = User.query.filter_by(username=username).first()
-        if user and check_password_hash(user.password, password):
-            session["user_id"] = user.id
-            session["username"] = user.username
+        if validate_user(username, password):
+            session["username"] = username
             flash("Đăng nhập thành công.")
             return redirect("/")
         else:

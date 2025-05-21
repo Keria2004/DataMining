@@ -1,13 +1,13 @@
-from flask import Blueprint, render_template, session, redirect, request, flash
+from flask import Blueprint, render_template, session, redirect, request, flash, current_app
 from functools import wraps
-from app.models import db, Favorite
+from app.firebase_favorite import get_favorites_by_user, toggle_favorite
 
 fav_bp = Blueprint('favorite', __name__)
 
 def login_required(f):
     @wraps(f)
     def wrap(*args, **kwargs):
-        if 'user_id' not in session:
+        if 'username' not in session:
             flash("Bạn cần đăng nhập.")
             return redirect("/login")
         return f(*args, **kwargs)
@@ -16,20 +16,22 @@ def login_required(f):
 @fav_bp.route("/favorites")
 @login_required
 def favorites():
-    user_id = session['user_id']
-    favorites = Favorite.query.filter_by(user_id=user_id).all()
-    return render_template("favorites.html", favorites=favorites)
+    username = session["username"]
+    favorites = get_favorites_by_user(username)
+
+    # ✅ Lấy df từ current_app
+    df = current_app.df
+    recipe_list = []
+    for fav in favorites:
+        recipe_row = df[df["id"] == fav["recipe_id"]]
+        if not recipe_row.empty:
+            recipe_list.append(recipe_row.iloc[0].to_dict())
+
+    return render_template("favorites.html", favorites=recipe_list)
 
 @fav_bp.route("/favorite/<int:recipe_id>", methods=["POST"])
 @login_required
-def toggle_favorite(recipe_id):
-    user_id = session['user_id']
-    fav = Favorite.query.filter_by(recipe_id=recipe_id, user_id=user_id).first()
-
-    if fav:
-        db.session.delete(fav)
-    else:
-        db.session.add(Favorite(recipe_id=recipe_id, user_id=user_id))
-    db.session.commit()
-
+def toggle_favorite_route(recipe_id):
+    username = session["username"]
+    toggle_favorite(username, recipe_id)
     return redirect(request.referrer or "/")
