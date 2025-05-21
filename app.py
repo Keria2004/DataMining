@@ -1,11 +1,12 @@
 from flask import Flask, render_template, request
-import pandas as pd
 from kmeans import load_and_process_data, apply_kmeans, get_ingredients_list, suggest_by_similarity
+
 
 app = Flask(__name__)
 
-# Tải dữ liệu & mô hình 1 lần khi khởi động
 df = load_and_process_data("data/clean_dataset.csv")
+df.reset_index(drop=True, inplace=True)  
+df['id'] = df.index  
 df, vectorizer, X = apply_kmeans(df, n_clusters=5)
 ingredient_list = get_ingredients_list(df)
 
@@ -25,7 +26,6 @@ def index():
 
         input_ings = [i.strip().lower() for i in user_input.split()]
 
-        # Bắt đầu từ df gốc
         result_df = df.copy()
 
         # Gợi ý theo ingredients trước (vì cần tính similarity với toàn bộ X)
@@ -53,6 +53,36 @@ def index():
         ingredients=user_input,
         recipes=recipes
     )
+
+@app.route("/recipe/<int:recipe_id>")
+def recipe_detail(recipe_id):
+    # Lấy công thức từ df theo id
+    recipe_row = df[df['id'] == recipe_id]
+    if recipe_row.empty:
+        return "Công thức không tồn tại", 404
+
+    recipe = recipe_row.iloc[0].to_dict()
+
+    # GỢI Ý THEO PHÂN CỤM (KMEANS)
+    similar_recipes = df[
+        (df['cluster'] == recipe['cluster']) & 
+        (df['id'] != recipe_id)
+    ].head(4).to_dict('records')
+
+    # Chuẩn hóa lại nguyên liệu công thức để hiển thị
+    ingredients_raw = recipe['ingredients']
+    recipe_ingredients = (
+        ingredients_raw if isinstance(ingredients_raw, list) 
+        else [i.strip().lower() for i in ingredients_raw.split(',')]
+    )
+    recipe['ingredients'] = recipe_ingredients
+
+    return render_template(
+        "recipe.html",
+        recipe=recipe,
+        similar_recipes=similar_recipes
+    )
+
 
 if __name__ == "__main__":
     app.run(debug=True)

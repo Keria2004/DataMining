@@ -1,15 +1,19 @@
-# kmeans.py
-
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 from sklearn.metrics.pairwise import cosine_similarity
-import ast
 
 def load_and_process_data(file_path):
     df = pd.read_csv(file_path)
-    df['ingredients'] = df['ingredients'].apply(ast.literal_eval)
-    df['ingredients_str'] = df['ingredients'].apply(lambda x: ' '.join(x).lower())
+
+    # Tách nguyên liệu từ chuỗi 'a, b, c' thành list ['a', 'b', 'c']
+    df['ingredients'] = df['ingredients'].apply(
+        lambda x: [i.strip().lower() for i in str(x).split(',')] if pd.notna(x) else []
+    )
+
+    # Ghép lại thành chuỗi để sử dụng cho TF-IDF
+    df['ingredients_str'] = df['ingredients'].apply(lambda lst: ' '.join(lst))
+
     return df
 
 def apply_kmeans(df, n_clusters=5):

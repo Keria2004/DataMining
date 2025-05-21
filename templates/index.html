@@ -91,9 +91,12 @@
             <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:scale-105 hover:shadow-xl transition-transform duration-300 animate-fadeIn">
               <!-- ẢNH + ICON -->
               <div class="relative">
-                <img src="{{ r['images'] }}"
-                     alt="{{ r['name'] }}"
-                     class="w-full h-36 object-cover">
+                <a href="/recipe/{{ r['id'] }}">
+                  <img src="{{ r['images'] }}"
+                      alt="{{ r['name'] }}"
+                      class="w-full h-36 object-cover">
+                </a>
+
                 <!-- ICON TRÁI TIM -->
                 <button
                   class="absolute bottom-2 right-2 text-red-500 text-xl hover:scale-125 transition"

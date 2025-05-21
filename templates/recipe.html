@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ recipe.name }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    #background-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      z-index: -1;
+      opacity: 0.15;
+    }
+    .backdrop {
+      background-color: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(8px);
+      border-radius: 1rem;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-100 text-gray-900 relative">
+  <!-- Background video -->
+  <video autoplay muted loop id="background-video">
+    <source src="/static/videos/background.mp4" type="video/mp4">
+  </video>
+
+  <div class="max-w-5xl mx-auto py-10 px-4 backdrop shadow-xl">
+
+    <!-- Tên món ăn -->
+    <h1 class="text-4xl font-bold mb-6 text-center">{{ recipe.name }}</h1>
+
+    <!-- Hình ảnh lớn -->
+    <div class="w-full mb-6">
+      <img src="{{ recipe.images }}" alt="{{ recipe.name }}" class="w-full max-h-[500px] object-cover rounded-lg shadow" />
+    </div>
+
+    <!-- Thông tin chi tiết -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <h2 class="text-2xl font-semibold mb-2">Ingredients</h2>
+        <ul class="list-disc list-inside space-y-1">
+          {% for ing in recipe.ingredients %}
+          <li>{{ ing }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div>
+        <h2 class="text-2xl font-semibold mb-2">Details</h2>
+        <p><strong>Calories:</strong> {{ recipe.calories }}</p>
+        <p><strong>Cuisine:</strong> {{ recipe.cuisine }}</p>
+      </div>
+    </div>
+
+    <!-- Món ăn tương tự -->
+    <div class="mt-10">
+      <h2 class="text-2xl font-bold mb-4">Similar Recipes</h2>
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {% for sim in similar_recipes %}
+        <div class="bg-white rounded-xl shadow p-2 hover:scale-105 transition">
+          <a href="/recipe/{{ sim.id }}">
+            <img src="{{ sim.images }}" class="w-full h-32 object-cover rounded-md">
+            <div class="text-center mt-2">
+              <h3 class="text-sm font-bold truncate">{{ sim.name }}</h3>
+              <p class="text-xs text-gray-500">{{ sim.cuisine }}</p>
+            </div>
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Món ăn gợi ý từ luật Apriori -->
+    {% if apriori_recipes %}
+    <div class="mt-12">
+      <h2 class="text-2xl font-bold mb-4">Recommended by Ingredient Patterns</h2>
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {% for rec in apriori_recipes %}
+        <div class="bg-white rounded-xl shadow p-2 hover:scale-105 transition">
+          <a href="/recipe/{{ rec.id }}">
+            <img src="{{ rec.images }}" class="w-full h-32 object-cover rounded-md">
+            <div class="text-center mt-2">
+              <h3 class="text-sm font-bold truncate">{{ rec.name }}</h3>
+              <p class="text-xs text-gray-500">{{ rec.cuisine }}</p>
+            </div>
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+
+  </div>
+</body>
+</html>
