@@ -4,15 +4,15 @@
   <meta charset="UTF-8" />
   <title>Food Recipe Suggestion</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style/styles.css') }}">
-  <script src="{{ url_for('static', filename='script/scripts.js') }}"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app/static/style/styles.css') }}">
+  <script src="{{ url_for('static', filename='app/static/script/scripts.js') }}"></script>
 </head>
 
 <body class="min-h-screen text-white">
 
   <!-- VIDEO NỀN -->
-  <video autoplay muted loop playsinline id="background-video">
-    <source src="/static/videos/background.mp4" type="video/mp4">
+  <video autoplay muted loop playsinline id="background-video" class="fixed top-0 left-0 w-full h-full object-cover -z-10">
+    <source src="{{ url_for('static', filename='videos/background.mp4') }}" type="video/mp4">
   </video>
 
   <!-- TIÊU ĐỀ -->
