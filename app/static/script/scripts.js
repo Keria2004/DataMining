@@ -62,20 +62,74 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-function toggleFavorite(btn) {
-  const card = btn.closest(".card");
-  const name = card.dataset.name;
+function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('opacity-100', 'pointer-events-auto');
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.remove('opacity-100', 'pointer-events-auto');
+        toast.classList.add('opacity-0', 'pointer-events-none');
+      }, 3000);
+    }
 
-  let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+    async function toggleFavorite(button) {
+      console.log("toggleFavorite được gọi, recipeId =", button.getAttribute('data-recipe-id'));
+      const recipeId = button.getAttribute('data-recipe-id');
+      try {
+        const response = await fetch(`/favorite/${recipeId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          credentials: 'same-origin'
+        });
 
-  if (favorites.includes(name)) {
-    favorites = favorites.filter(item => item !== name);
-    alert(`❌ Đã gỡ món: ${name}`);
-  } else {
-    favorites.push(name);
-    alert(`❤️ Đã thêm vào giỏ: ${name}`);
-  }
+        if (response.status === 204) {
+          if (button.classList.contains('favorited')) {
+            button.classList.remove('favorited');
+            button.textContent = '❤️';
+            showToast('Món ăn đã được bỏ khỏi mục yêu thích.');
+          } else {
+            button.classList.add('favorited');
+            button.textContent = '💖';
+            showToast('Món ăn đã được lưu vào mục yêu thích.');
+          }
+        } else if (response.status === 401) {
+          showToast('Bạn cần đăng nhập để thêm món yêu thích.');
+          window.location.href = '/login';
+        } else {
+          showToast('Đã xảy ra lỗi khi xử lý yêu thích. Vui lòng thử lại.');
+        }
+      } catch (error) {
+        console.error('Lỗi khi toggle favorite:', error);
+        showToast('Không thể kết nối đến server.');
+      }
+    }
 
-  localStorage.setItem("favorites", JSON.stringify(favorites));
-}
 
+  document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.btn-remove-favorite').forEach(btn => {
+    btn.addEventListener('click', async function () {
+      const recipeId = this.dataset.recipeId;
+      if (!confirm('Bạn có chắc muốn xóa món này khỏi danh sách yêu thích?')) return;
+
+      try {
+        const response = await fetch(`/favorite/${recipeId}`, {
+          method: 'POST',
+          credentials: 'same-origin'
+        });
+        if (response.status === 204) {
+          const card = this.closest('div'); 
+          if (card) card.remove();
+          showToast('Đã loại bỏ món ăn khỏi danh sách yêu thích.');
+        } else {
+          showToast('Lỗi khi xóa món ăn.');
+        }
+      } catch {
+        showToast('Không thể kết nối đến server.');
+      }
+    });
+  });
+});

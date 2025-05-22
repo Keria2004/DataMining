@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <title>{{ recipe.name }}</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app/static/style/styles.css') }}">
+  <script src="{{ url_for('static', filename='script/scripts.js') }}"></script>
   <style>
     #background-video {
       position: fixed;
@@ -29,14 +31,25 @@
     <source src="{{ url_for('static', filename='videos/background.mp4') }}" type="video/mp4">
   </video>
 
-  <div class="max-w-5xl mx-auto py-10 px-4 backdrop shadow-xl">
+  <div class="max-w-5xl mx-auto py-10 px-4 backdrop shadow-xl relative">
 
     <!-- Tên món ăn -->
     <h1 class="text-4xl font-bold mb-6 text-center">{{ recipe.name }}</h1>
 
     <!-- Hình ảnh lớn -->
-    <div class="w-full mb-6">
+    <div class="w-full mb-6 relative">
       <img src="{{ recipe.images }}" alt="{{ recipe.name }}" class="w-full max-h-[500px] object-cover rounded-lg shadow" />
+
+      <button
+        class="absolute top-4 right-4 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-3 shadow-lg text-red-600 text-3xl transition transform hover:scale-110"
+        data-recipe-id="{{ recipe.id if recipe.id else 'detail' }}"
+        onclick="toggleFavorite(this)"
+        title="Thêm vào yêu thích"
+        type="button"
+        aria-label="Yêu thích món ăn"
+      >
+        ❤️
+      </button>
     </div>
 
     <!-- Thông tin chi tiết -->
@@ -63,7 +76,7 @@
         {% for sim in similar_recipes %}
         <div class="bg-white rounded-xl shadow p-2 hover:scale-105 transition">
           <a href="/recipe/{{ sim.id }}">
-            <img src="{{ sim.images }}" class="w-full h-32 object-cover rounded-md">
+            <img src="{{ sim.images }}" class="w-full h-32 object-cover rounded-md" alt="{{ sim.name }}">
             <div class="text-center mt-2">
               <h3 class="text-sm font-bold truncate">{{ sim.name }}</h3>
               <p class="text-xs text-gray-500">{{ sim.cuisine }}</p>
@@ -74,27 +87,10 @@
       </div>
     </div>
 
-    <!-- Món ăn gợi ý từ luật Apriori -->
-    {% if apriori_recipes %}
-    <div class="mt-12">
-      <h2 class="text-2xl font-bold mb-4">Recommended by Ingredient Patterns</h2>
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {% for rec in apriori_recipes %}
-        <div class="bg-white rounded-xl shadow p-2 hover:scale-105 transition">
-          <a href="/recipe/{{ rec.id }}">
-            <img src="{{ rec.images }}" class="w-full h-32 object-cover rounded-md">
-            <div class="text-center mt-2">
-              <h3 class="text-sm font-bold truncate">{{ rec.name }}</h3>
-              <p class="text-xs text-gray-500">{{ rec.cuisine }}</p>
-            </div>
-          </a>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-    {% endif %}
-
-
   </div>
+
+  <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white px-6 py-3 rounded-lg shadow-lg opacity-0 pointer-events-none transition-opacity duration-300 z-50"></div>
+
+
 </body>
 </html>

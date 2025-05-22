@@ -1,10 +1,16 @@
 from flask import Blueprint, render_template, request, current_app
 from app.kmeans import suggest_by_similarity
+from flask import Blueprint, render_template, request, current_app, session, redirect, flash
 
 main_bp = Blueprint("main", __name__)
 
 @main_bp.route("/", methods=["GET", "POST"])
 def index():
+
+    if "username" not in session:
+        flash("Bạn cần đăng nhập để sử dụng tính năng này.")
+        return redirect("/login")
+
     df = current_app.df
     vectorizer = current_app.vectorizer
     X = current_app.X

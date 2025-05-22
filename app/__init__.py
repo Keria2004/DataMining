@@ -1,5 +1,5 @@
 from flask import Flask
-from app.models import db  # ✅ Dùng lại instance từ models.py
+from app.models import db 
 from app.kmeans import load_and_process_data, apply_kmeans, get_ingredients_list
 from app.main_routes import main_bp
 from app.auth_routes import auth_bp

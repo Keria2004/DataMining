@@ -48,3 +48,29 @@ def suggest_by_similarity(df, vectorizer, X, input_ings, top_k=10):
     df['similarity'] = similarities
 
     return df[df['similarity'] > 0].sort_values(by='similarity', ascending=False).head(top_k)
+
+
+def recommend_from_favorites(favorite_recipes, all_recipes, n_clusters=5, n_recommend=10):
+    documents = [r['ingredients'] if isinstance(r['ingredients'], str) else ' '.join(r['ingredients']) for r in all_recipes]
+    
+    vectorizer = TfidfVectorizer(stop_words='english')
+    X = vectorizer.fit_transform(documents)
+
+    kmeans = KMeans(n_clusters=n_clusters, random_state=42).fit(X)
+    labels = kmeans.labels_
+
+    favorite_ids = set(r['id'] for r in favorite_recipes)
+
+    # Xác định cluster trung tâm của món yêu thích (lấy cluster có nhiều món yêu thích nhất)
+    favorite_indices = [i for i, r in enumerate(all_recipes) if r['id'] in favorite_ids]
+    favorite_clusters = labels[favorite_indices]
+    from collections import Counter
+    most_common_cluster = Counter(favorite_clusters).most_common(1)[0][0]
+
+    # Lọc món trong cluster đó nhưng chưa có trong yêu thích
+    candidate_indices = [i for i, label in enumerate(labels) if label == most_common_cluster and all_recipes[i]['id'] not in favorite_ids]
+
+    # Lấy tối đa n_recommend món gợi ý
+    recommended = [all_recipes[i] for i in candidate_indices[:n_recommend]]
+
+    return recommended

@@ -5,7 +5,7 @@
   <title>Food Recipe Suggestion</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='app/static/style/styles.css') }}">
-  <script src="{{ url_for('static', filename='app/static/script/scripts.js') }}"></script>
+  <script src="{{ url_for('static', filename='script/scripts.js') }}"></script>
 </head>
 
 <body class="min-h-screen text-white">
@@ -14,6 +14,14 @@
   <video autoplay muted loop playsinline id="background-video" class="fixed top-0 left-0 w-full h-full object-cover -z-10">
     <source src="{{ url_for('static', filename='videos/background.mp4') }}" type="video/mp4">
   </video>
+
+  {% if session.username %}
+  <a href="/favorites"
+    class="fixed top-4 left-4 z-20 flex items-center gap-2 bg-red-600 bg-opacity-80 hover:bg-opacity-100 text-white px-4 py-2 rounded-full shadow transition"
+    title="Xem danh sách yêu thích">
+    <span>❤️</span> <span class="font-semibold">Yêu thích</span>
+  </a>
+  {% endif %}
 
   <!-- TIÊU ĐỀ -->
   <div class="text-center mt-10 px-4">
@@ -89,33 +97,36 @@
           <div id="resultSection" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-6">
             {% for r in recipes %}
             <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:scale-105 hover:shadow-xl transition-transform duration-300 animate-fadeIn">
-              <!-- ẢNH + ICON -->
-              <div class="relative">
-                <a href="/recipe/{{ r['id'] }}">
-                  <img src="{{ r['images'] }}"
-                      alt="{{ r['name'] }}"
-                      class="w-full h-36 object-cover">
+
+              <!-- ẢNH + ICON YÊU THÍCH -->
+              <div class="relative w-full h-36 overflow-hidden">
+                <a href="/recipe/{{ r['id'] if r['id'] else loop.index0 }}">
+                  <img
+                    src="{{ r['images'] }}"
+                    alt="{{ r['name'] }}"
+                    class="w-full h-full object-cover block"
+                  />
                 </a>
 
-                <!-- ICON TRÁI TIM -->
                 <button
-                  class="absolute bottom-2 right-2 text-red-500 text-xl hover:scale-125 transition"
+                  class="absolute bottom-2 right-2 text-red-500 text-2xl hover:scale-125 transition transform"
+                  data-recipe-id="{{ r['id'] if r['id'] else loop.index0 }}"
                   onclick="toggleFavorite(this)"
-                  data-name="{{ r['name'] }}"
-                  title="Thêm vào giỏ"
+                  title="Thêm vào yêu thích"
+                  type="button"
                 >
                   ❤️
                 </button>
               </div>
 
-              <!-- THÔNG TIN MÓN -->
+              <!-- THÔNG TIN MÓN ĂN -->
               <div class="p-4 text-gray-800">
                 <h3 class="text-sm font-bold mb-1 truncate">{{ r['name'] }}</h3>
                 {% if r.get('cuisine') %}
-                <p class="text-xs text-gray-600">Cuisine: {{ r['cuisine'] }}</p>
+                  <p class="text-xs text-gray-600">Cuisine: {{ r['cuisine'] }}</p>
                 {% endif %}
                 {% if r.get('calories') %}
-                <p class="text-xs text-gray-600">Calories: {{ r['calories'] }}</p>
+                  <p class="text-xs text-gray-600">Calories: {{ r['calories'] }}</p>
                 {% endif %}
               </div>
             </div>
@@ -128,6 +139,15 @@
     </div>
 
   </div>
+
+  {% if session.username %}
+    <div class="absolute top-4 right-4 text-sm text-white bg-black bg-opacity-50 px-4 py-1 rounded-full shadow-md z-10">
+      Xin chào, {{ session.username }} | <a href="/logout" class="underline hover:text-red-400">Đăng xuất</a>
+    </div>
+  {% endif %}
+
+  <!-- Thanh thông báo toast -->
+  <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white px-6 py-3 rounded-lg shadow-lg opacity-0 pointer-events-none transition-opacity duration-300 z-50"></div>
 
 </body>
 </html>
