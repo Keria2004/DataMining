@@ -15,14 +15,6 @@
     <source src="{{ url_for('static', filename='videos/background.mp4') }}" type="video/mp4">
   </video>
 
-  {% if session.username %}
-  <a href="/favorites"
-    class="fixed top-4 left-4 z-20 flex items-center gap-2 bg-red-600 bg-opacity-80 hover:bg-opacity-100 text-white px-4 py-2 rounded-full shadow transition"
-    title="Xem danh sách yêu thích">
-    <span>❤️</span> <span class="font-semibold">Yêu thích</span>
-  </a>
-  {% endif %}
-
   <!-- TIÊU ĐỀ -->
   <div class="text-center mt-10 px-4">
     <h1 class="text-4xl md:text-6xl font-extrabold drop-shadow leading-tight">
@@ -46,6 +38,7 @@
             id="ingredientInput"
             placeholder="Type ingredients..."
             class="w-full pl-4 pr-28 py-2 bg-white border border-gray-300 rounded-full text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-400"
+            value="{{ ingredients | default('') }}"
           />
           <button
             type="submit"
@@ -82,7 +75,7 @@
             name="max_calories"
             placeholder="Nhập ví dụ: 300"
             min="0"
-            value="{{ max_calories }}"
+            value="{{ max_calories | default('') }}"
             class="w-full rounded-lg px-4 py-2 text-gray-900"
           />
         </div>
@@ -139,12 +132,6 @@
     </div>
 
   </div>
-
-  {% if session.username %}
-    <div class="absolute top-4 right-4 text-sm text-white bg-black bg-opacity-50 px-4 py-1 rounded-full shadow-md z-10">
-      Xin chào, {{ session.username }} | <a href="/logout" class="underline hover:text-red-400">Đăng xuất</a>
-    </div>
-  {% endif %}
 
   <!-- Thanh thông báo toast -->
   <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white px-6 py-3 rounded-lg shadow-lg opacity-0 pointer-events-none transition-opacity duration-300 z-50"></div>

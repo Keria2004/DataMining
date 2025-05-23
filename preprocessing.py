@@ -1,7 +1,7 @@
 import pandas as pd
 
 # Load dữ liệu CSV 1 lần khi module được import
-df_recipes = pd.read_csv("data/clean_dataset.csv")
+df_recipes = pd.read_csv("dataset/clean_dataset.csv")
 
 # Tạo cột id dựa trên index
 df_recipes['id'] = df_recipes.index.astype(str)

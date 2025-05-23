@@ -1,38 +1,42 @@
-from flask import Blueprint, session, redirect, flash, render_template
-from functools import wraps
-from app.firebase_favorite import toggle_favorite, get_favorites_by_user
-from preprocessing import find_recipe_by_id , recipes_data
+from flask import Blueprint, render_template, request, redirect, flash
+from flask_login import login_required, current_user
+from app.models import Favorite
+from app import db
+from preprocessing import find_recipe_by_id, recipes_data
 from app.kmeans import recommend_from_favorites
 
-fav_bp = Blueprint("favorite", __name__)
+fav_bp = Blueprint('favorite', __name__)
 
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if "username" not in session:
-            flash("Bạn cần đăng nhập để tiếp tục.")
-            return redirect("/login")
-        return f(*args, **kwargs)
-    return decorated_function
-
-@fav_bp.route("/favorite/<int:recipe_id>", methods=["POST"])
+@fav_bp.route('/favorite/<int:recipe_id>', methods=['POST'])
 @login_required
 def toggle_favorite_route(recipe_id):
-    username = session["username"]
-    toggle_favorite(username, recipe_id)
-    print(f"[DEBUG] Đã xử lý yêu thích cho {username} - Recipe {recipe_id}")
+    user_id = current_user.id
+    favorite = Favorite.query.filter_by(user_id=user_id, recipe_id=recipe_id).first()
+
+    if favorite:
+        db.session.delete(favorite)
+        action = "Xóa"
+    else:
+        new_fav = Favorite(user_id=user_id, recipe_id=recipe_id)
+        db.session.add(new_fav)
+        action = "Thêm"
+
+    db.session.commit()
+    print(f"{action} món yêu thích cho user {user_id}, recipe {recipe_id}")
     return '', 204
 
-
-@fav_bp.route("/favorites")
+@fav_bp.route('/favorites')
 @login_required
 def show_favorites():
-    username = session["username"]
-    favorites = get_favorites_by_user(username)
-    favorite_recipes = [find_recipe_by_id(fav['recipe_id']) for fav in favorites if find_recipe_by_id(fav['recipe_id'])]
+    user_id = current_user.id
+    favorites = Favorite.query.filter_by(user_id=user_id).all()
 
-    # Gợi ý món mới dựa trên món yêu thích
+    favorite_recipes = []
+    for fav in favorites:
+        recipe = find_recipe_by_id(fav.recipe_id)
+        if recipe:
+            favorite_recipes.append(recipe)
+
     recommendations = recommend_from_favorites(favorite_recipes, recipes_data)
 
-    return render_template("favorites.html", favorites=favorite_recipes, recommendations=recommendations)
-
+    return render_template('favorites.html', favorites=favorite_recipes, recommendations=recommendations)
